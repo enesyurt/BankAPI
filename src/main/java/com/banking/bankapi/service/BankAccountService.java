@@ -3,6 +3,7 @@ package com.banking.bankapi.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.banking.bankapi.dto.UpdateAccountRequest;
 import com.banking.bankapi.exception.AccountNotFoundException;
 import com.banking.bankapi.model.BankAccount;
 import com.banking.bankapi.dto.BankAccountResponse;
@@ -72,6 +73,7 @@ public class BankAccountService {
         return bankAccountRepository.save(account);
     }
 
+    // Transfer money
     @Transactional
     public void transfer(Long fromAccountId, Long toAccountId, double amount){
         BankAccount sourceAccount = bankAccountRepository.findById((fromAccountId))
@@ -95,6 +97,7 @@ public class BankAccountService {
        // return List.of(sourceAccount, destinationAccount); // returns a List of BankAccount
     }
 
+    // Get account details for all accounts.
     public List<BankAccountResponse> getAllAccounts() {
         return bankAccountRepository.findAll().stream().map(account -> {
             BankAccountResponse response = new BankAccountResponse();
@@ -103,5 +106,18 @@ public class BankAccountService {
             response.setBalance((account.getBalance()));
             return response;
         }).collect(Collectors.toList());
+    }
+
+    // Update account details.
+    public BankAccount updateAccount(Long accountId, UpdateAccountRequest request) {
+        BankAccount account = bankAccountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+        if (request.getOwnerName() != null) {
+           account.setOwnerName(request.getOwnerName());
+        }
+        if (request.getBalance() != null) {
+            account.setBalance(request.getBalance());
+        }
+        return bankAccountRepository.save(account);
     }
 }
