@@ -1,7 +1,11 @@
 package com.banking.bankapi.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import com.banking.bankapi.exception.AccountNotFoundException;
 import com.banking.bankapi.model.BankAccount;
+import com.banking.bankapi.dto.BankAccountResponse;
 import com.banking.bankapi.repository.BankAccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +26,17 @@ public class BankAccountService {
         BankAccount account = new BankAccount(ownerName, initialDeposit);
         return bankAccountRepository.save(account);
     }
+
+    // Delete account
+    public void deleteAccount(Long accountId) {
+        if (bankAccountRepository.existsById(accountId)) {
+           bankAccountRepository.deleteById(accountId);
+        }
+        else {
+            throw new AccountNotFoundException("Account with ID " + accountId + "not found.");
+        }
+    }
+
 
     // Get account balance
     public double checkBalance(Long accountId) {
@@ -58,7 +73,7 @@ public class BankAccountService {
     }
 
     @Transactional
-    public List<BankAccount> transferMoney(Long fromAccountId, Long toAccountId, double amount){
+    public void transfer(Long fromAccountId, Long toAccountId, double amount){
         BankAccount sourceAccount = bankAccountRepository.findById((fromAccountId))
                 .orElseThrow(()-> new IllegalArgumentException("Account not found"));
         BankAccount destinationAccount = bankAccountRepository.findById((toAccountId))
@@ -77,7 +92,16 @@ public class BankAccountService {
         bankAccountRepository.saveAll(List.of(sourceAccount, destinationAccount));
 
         // Return the list of both accounts
-        return List.of(sourceAccount, destinationAccount); // returns a List of BankAccount
+       // return List.of(sourceAccount, destinationAccount); // returns a List of BankAccount
     }
 
+    public List<BankAccountResponse> getAllAccounts() {
+        return bankAccountRepository.findAll().stream().map(account -> {
+            BankAccountResponse response = new BankAccountResponse();
+            response.setId(account.getId());
+            response.setOwnerName(account.getOwnerName());
+            response.setBalance((account.getBalance()));
+            return response;
+        }).collect(Collectors.toList());
+    }
 }
