@@ -1,8 +1,6 @@
 package com.banking.bankapi.controller;
 
-import com.banking.bankapi.dto.BankAccountResponse;
-import com.banking.bankapi.dto.DepositRequest;
-import com.banking.bankapi.dto.TransferRequest;
+import com.banking.bankapi.dto.*;
 import com.banking.bankapi.exception.AccountNotFoundException;
 import com.banking.bankapi.model.BankAccount;
 import com.banking.bankapi.service.BankAccountService;
@@ -13,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import com.banking.bankapi.dto.CreateAccountRequest;
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -32,13 +29,15 @@ public class BankAccountController {
     }
 
     // POST: Create a new bank account
+    // API: http://localhost:8080/bankaccounts
     @PostMapping
     public BankAccount createAccount(@RequestBody CreateAccountRequest request) {
         return bankAccountService.createAccount(request.getOwnerName(), request.getInitialDeposit());
     }
 
     // DELETE: Delete Bank Account by ID
-    @DeleteMapping("/delete/{accountId}")
+    // API: http://localhost:8080/bankaccounts/1/delete
+    @DeleteMapping("/{accountId}/delete")
     public ResponseEntity<String> deleteAccount(@PathVariable Long accountId) {
         try {
             bankAccountService.deleteAccount(accountId);
@@ -50,18 +49,21 @@ public class BankAccountController {
 
 
     // GET: Get account balance
+    // API: http://localhost:8080/bankaccounts/1/balance
     @GetMapping("/{accountId}/balance")
     public double getAccountBalance(@PathVariable long accountId) {
         return bankAccountService.checkBalance(accountId);
     }
 
     // POST: Withdraw money
+    // API: http://localhost:8080/bankaccounts/1/withdraw
     @PostMapping("/{accountId}/withdraw")
     public BankAccount withdraw(@PathVariable Long accountId, @RequestParam double amount) {
-        return bankAccountService.withdraw(accountId,amount);
+        return bankAccountService.withdraw(accountId, amount);
     }
 
     // POST: Transfer Money
+    // API: http://localhost:8080/bankaccounts/transfer
     @PostMapping("/transfer")
     public String transfer(@Valid @RequestBody TransferRequest request) {
         bankAccountService.transfer(request.getFromAccountId(), request.getToAccountId(), request.getAmount());
@@ -69,14 +71,25 @@ public class BankAccountController {
     }
 
     // POST: Deposit Money
+    // API: http://localhost:8080/bankaccounts/1/deposit
     @PostMapping("/{accountId}/deposit")
     public BankAccount deposit(@PathVariable Long accountId, @RequestBody @Valid DepositRequest request) {
         return bankAccountService.deposit(accountId, request.getAmount());
     }
 
-    // GET: Get Account Info
+    // GET: Get account info
+    // API: http://localhost:8080/bankaccounts
     @GetMapping
     public List<BankAccountResponse> getAllAccounts() {
         return bankAccountService.getAllAccounts();
     }
+
+    // PUT: Update account details.
+    // API: http://localhost:8080/bankaccounts/1/update
+    @PutMapping("/{accountId}/update")
+    public BankAccount updateAccount(@PathVariable Long accountId, @RequestBody UpdateAccountRequest request) {
+        return bankAccountService.updateAccount(accountId, request);
+    }
+
+
 }
